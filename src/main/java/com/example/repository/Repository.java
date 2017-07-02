@@ -17,8 +17,8 @@ package com.example.repository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.example.SimpleConfiguration;
@@ -28,29 +28,50 @@ import com.example.SimpleConfiguration;
  */
 public class Repository {
 
-	private static void doWithMongo() {
+	private static void doWithMongo(EmployeeRepository repository) {
 
 		Employee bender = getBender();
 		Employee leela = getLeela();
+
+		repository.deleteAll();
+
+		repository.saveAll(Arrays.asList(bender, leela));
+
+		Iterable<Employee> all = repository.findByDrink("Slurm");
+
+		for (Employee employee : all) {
+			System.out.println(employee);
+		}
+
+		List<EmployeeProjection> employees = repository.findAllBy();
+
+		for (EmployeeProjection employee : employees) {
+			System.out.println(employee.getName() + " - " + employee.getMood());
+			System.out.println(employee.getDescription());
+		}
 	}
 
 	private static Employee getBender() {
+
 		Employee bender = new Employee();
 
 		bender.setName("Bender");
 		bender.setFavoriteDrinks(Arrays.asList("Beer", "Booze"));
 		bender.setMood("Bite my shiny metal ass!");
 		bender.setBirthDate(LocalDate.parse("2996-01-01"));
+
 		return bender;
 	}
 
 	private static Employee getLeela() {
+
 		Employee leela = new Employee();
 
 		leela.setName("Mrs. Leela Fry");
 		leela.setFavoriteDrinks(Arrays.asList("Slurm"));
 		leela.setMood("I don't have good depth perception");
 		leela.setBirthDate(LocalDate.parse("2975-07-29"));
+
 		return leela;
 	}
 
@@ -58,7 +79,7 @@ public class Repository {
 
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SimpleConfiguration.class);
 
-		// doWithMongo(context.getBean(EmployeeRepository.class));
+		doWithMongo(context.getBean(EmployeeRepository.class));
 
 		context.stop();
 	}

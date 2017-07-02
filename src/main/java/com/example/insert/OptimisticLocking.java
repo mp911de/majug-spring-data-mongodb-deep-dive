@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Query;
@@ -38,8 +39,17 @@ public class OptimisticLocking {
 
 		operations.remove(new Query(), Employee.class);
 
-		Employee bender = getEmployee();
+		operations.insert(getEmployee());
 
+		Employee employee = operations.query(Employee.class).matching(new Query()).first().get();
+
+		Employee otherProcess = operations.query(Employee.class).matching(new Query()).first().get();
+
+		otherProcess.setBirthDate(LocalDate.parse("2011-01-01"));
+		operations.save(otherProcess);
+
+		// Fails with optimistic locking exception
+		operations.save(employee);
 	}
 
 	private static Employee getEmployee() {
@@ -68,6 +78,8 @@ public class OptimisticLocking {
 	static class Employee {
 
 		ObjectId id;
+
+		@Version long version;
 
 		String name;
 		List<String> favoriteDrinks;

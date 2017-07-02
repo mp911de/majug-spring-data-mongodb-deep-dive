@@ -16,9 +16,15 @@
 package com.example.geo;
 
 import org.bson.types.ObjectId;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
 import org.springframework.data.repository.CrudRepository;
 
 /**
  * @author Mark Paluch
  */
-public interface LocationRepository extends CrudRepository<Location, ObjectId> {}
+public interface LocationRepository extends CrudRepository<Location, ObjectId> {
+
+	GeoResults<Location> findByLocationNear(Point point, Distance distance);
+}

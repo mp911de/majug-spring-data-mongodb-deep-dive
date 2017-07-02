@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
@@ -93,7 +94,27 @@ public class Conversions {
 
 		@Override
 		public CustomConversions customConversions() {
-			return new MongoCustomConversions(Arrays.asList());
+			return new MongoCustomConversions(Arrays.asList(MoodToStringConverter.INSTANCE, StringToMoodConverter.INSTANCE));
+		}
+	}
+
+	enum MoodToStringConverter implements Converter<Mood, String> {
+
+		INSTANCE;
+
+		@Override
+		public String convert(Mood source) {
+			return source.getMood();
+		}
+	}
+
+	enum StringToMoodConverter implements Converter<String, Mood> {
+
+		INSTANCE;
+
+		@Override
+		public Mood convert(String source) {
+			return Mood.of(source);
 		}
 	}
 

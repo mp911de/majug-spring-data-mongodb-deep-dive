@@ -15,10 +15,20 @@
  */
 package com.example.driver;
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.bson.Document;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.example.SimpleConfiguration;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * @author Mark Paluch
@@ -27,6 +37,22 @@ public class PlainMongoDB {
 
 	private static void doWithMongo(MongoClient client) {
 
+		MongoDatabase database = client.getDatabase("test");
+
+		MongoCollection<Document> employee = database.getCollection("employee");
+
+		Document document = new Document().append("name", "Bender")
+				.append("favoriteDrinks", Arrays.asList("Beer", "Booze"))
+				.append("mood", "Bite my shiny metal ass!")
+				.append("date_of_birth", Date.valueOf(LocalDate.parse("2996-01-01")));
+
+		employee.insertOne(document);
+
+		List<Document> into = employee.find(new Document("name", "Bender")).into(new ArrayList<>());
+
+		for (Document resultDocument : into) {
+			System.out.println(resultDocument);
+		}
 	}
 
 	public static void main(String[] args) {

@@ -15,6 +15,8 @@
  */
 package com.example.aggregation;
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -24,6 +26,8 @@ import java.util.List;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -56,6 +60,18 @@ public class Aggregations {
 
 		operations.insertAll(Arrays.asList(bender, leela));
 
+		TypedAggregation<Employee> aggregation = newAggregation(Employee.class,
+				project("favoriteDrinks")
+						.andExpression("age + 22").as("foo"),
+				unwind("favoriteDrinks"),
+				project("foo")
+						.andExpression("toLower(favoriteDrinks)").as("lower"));
+
+		AggregationResults<org.bson.Document> results = operations.aggregate(aggregation, org.bson.Document.class);
+
+		for (org.bson.Document result : results) {
+			System.out.println(result);
+		}
 	}
 
 	public static void main(String[] args) {

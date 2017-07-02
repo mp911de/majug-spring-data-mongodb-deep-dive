@@ -25,6 +25,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import com.example.SimpleConfiguration;
 
@@ -42,6 +43,31 @@ public class InsertAndUpdate {
 
 		Employee bender = getBender();
 		Employee leela = getLeela();
+
+		operations.insert(bender);
+
+		operations.insert(Employee.class)
+				.inCollection("foo")
+				.all(Arrays.asList(bender, leela));
+
+		List<Employee> employees = operations.query(Employee.class)
+				.inCollection("foo")
+				.all();
+
+		for (Employee employee : employees) {
+			System.out.println(employee);
+		}
+
+		operations.update(Employee.class)
+				.inCollection("foo")
+				.apply(new Update().push("favoriteDrinks", "Dr. Jitter"))
+				.all();
+
+		List<Employee> afterUpdate = operations.query(Employee.class).inCollection("foo").all();
+
+		for (Employee employee : afterUpdate) {
+			System.out.println(employee);
+		}
 	}
 
 	private static Employee getBender() {

@@ -15,7 +15,40 @@
  */
 package com.example.mapping;
 
+import static org.springframework.data.mongodb.core.index.GeoSpatialIndexType.*;
+
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+@Document(language = "en")
 @Data
-public class Employee {}
+public class Employee {
+
+	@Id String id;
+
+	@Indexed(sparse = true, name = "name_index") String name;
+
+	@Version long version;
+
+	@GeoSpatialIndexed(type = GEO_2DSPHERE) GeoJsonPoint location;
+
+	@TextIndexed String resume;
+
+	@DBRef Employee boss;
+
+	List<String> favoriteDrinks;
+	String mood;
+	@Field("date_of_birth") LocalDate birthDate;
+}

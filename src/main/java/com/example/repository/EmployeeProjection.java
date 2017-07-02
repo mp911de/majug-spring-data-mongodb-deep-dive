@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.geo;
+package com.example.repository;
 
-import static org.springframework.data.mongodb.core.index.GeoSpatialIndexType.*;
+import org.springframework.beans.factory.annotation.Value;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+/**
+ * @author Mark Paluch
+ */
+public interface EmployeeProjection {
 
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
-import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+	String getName();
 
-@Document
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Location {
+	String getMood();
 
-	String name;
-
-	@GeoSpatialIndexed(type = GEO_2DSPHERE) GeoJsonPoint location;
+	@Value("#{target.name + ' - ' + target.mood}")
+	String getDescription();
 }

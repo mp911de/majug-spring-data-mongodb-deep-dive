@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.geo;
+package com.example.repository;
 
-import static org.springframework.data.mongodb.core.index.GeoSpatialIndexType.*;
+import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
-import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+/**
+ * @author Mark Paluch
+ */
+public interface EmployeeRepository extends CrudRepository<Employee, ObjectId> {
 
-@Document
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Location {
+	List<Employee> findAllByFavoriteDrinksContains(String drink);
 
-	String name;
+	@Query("{favoriteDrinks : ?0}")
+	List<Employee> findByDrink(String drink);
 
-	@GeoSpatialIndexed(type = GEO_2DSPHERE) GeoJsonPoint location;
+	boolean existsByFavoriteDrinksContains(String drink);
+
+	List<EmployeeProjection> findAllBy();
 }

@@ -17,6 +17,11 @@ package com.example
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.data.mongodb.core.MongoOperations
+import org.springframework.data.mongodb.core.insert
+import org.springframework.data.mongodb.core.mapping.Field
+import org.springframework.data.mongodb.core.query
+import java.time.LocalDate
+import java.util.*
 
 /**
  * @author Mark Paluch
@@ -29,8 +34,25 @@ object KotlinExample {
 		val context = AnnotationConfigApplicationContext(SimpleConfiguration::class.java)
 
 		val operations = context.getBean(MongoOperations::class.java)
+
+		val employee = Employee()
+
+		employee.name = "Bender"
+		employee.favoriteDrinks = Arrays.asList("Beer", "Booze")
+		employee.mood = "Bite my shiny metal ass!"
+		employee.birthDate = LocalDate.parse("2996-01-01")
+
+		operations.insert<Employee>().one(employee)
+		operations.query<Employee>().all().forEach(::println)
 	}
 }
 
+data class Employee(var name: String?,
+					var favoriteDrinks: List<String>,
+					var mood: String?,
+					@Field("date_of_birth") var birthDate: LocalDate?) {
+
+	constructor() : this(null, Collections.emptyList(), null, null)
+}
 
 

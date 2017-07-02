@@ -18,6 +18,9 @@ package com.example.geo;
 import java.util.Arrays;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import com.example.SimpleConfiguration;
@@ -42,6 +45,11 @@ public class GeoRepository {
 
 		repository.deleteAll();
 		repository.saveAll(Arrays.asList(nny, timeSquare, carnegieHall, flatironBuilding, columbiaU));
+
+		GeoResults<Location> near = repository.findByLocationNear(timeSquare.getLocation(), new Distance(5, Metrics.MILES));
+
+		System.out.println(near.getAverageDistance());
+		System.out.println(near.getContent());
 	}
 
 	public static void main(String[] args) {

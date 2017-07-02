@@ -15,21 +15,49 @@
  */
 package com.example.boot
 
+import org.bson.types.ObjectId
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.data.mongodb.core.CollectionOptions
 import org.springframework.data.mongodb.core.MongoOperations
+import org.springframework.data.mongodb.core.createCollection
+import org.springframework.data.mongodb.core.dropCollection
+import org.springframework.data.mongodb.repository.Tailable
+import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Flux
+import java.time.Duration
+import java.util.*
+import java.util.function.Supplier
+import java.util.stream.Stream
 
 /**
  * @author Mark Paluch
  */
 @SpringBootApplication
 class SpringDataMongodbDeepDiveApplication {
+
 	@Bean
-	fun clr(operations: MongoOperations): CommandLineRunner {
+	fun clr(repository: PersonRepository, operations: MongoOperations): CommandLineRunner {
 
 		return CommandLineRunner {
+
+			operations.dropCollection<Person>()
+			operations.createCollection(Person::class, CollectionOptions.empty().capped().size(100000))
+
+			val names = arrayOf("Bender", "Leela", "Fry", "Farnsworth", "Dr. Zoidberg")
+
+			val stream = Stream.generate(Supplier { names[Random().nextInt(names.size)] }).map(::Person)
+
+			Flux.interval(Duration.ofSeconds(2))
+					.zipWith(Flux.fromStream(stream))
+					.map { t -> t.t2 }
+					.flatMap { person -> repository.save(person) }
+					.subscribe()
 		}
 	}
 }
@@ -38,6 +66,18 @@ fun main(args: Array<String>) {
 	SpringApplication.run(SpringDataMongodbDeepDiveApplication::class.java, *args)
 }
 
+@RestController
+class PersonController(val repository: PersonRepository) {
+
+	@GetMapping("stream", produces = arrayOf(MediaType.APPLICATION_STREAM_JSON_VALUE))
+	fun stream() = repository.findAllBy()
+}
 
 
+interface PersonRepository : ReactiveCrudRepository<Person, ObjectId> {
 
+	@Tailable
+	fun findAllBy(): Flux<Person>
+}
+
+data class Person(val name: String)
